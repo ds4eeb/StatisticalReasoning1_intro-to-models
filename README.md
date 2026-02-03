@@ -37,73 +37,6 @@ library(ggeffects) # for the prediction plot
 library(lterdatasampler)
 ```
 
-``` r
-# latitude
-m.crab.watersd <- 
-  brm(data = pie_crab, 
-      family = gaussian,
-      size ~ water_temp_sd,
-      iter = 2000, warmup = 1000, chains = 4, cores = 4,
-      seed = 4,
-      file = "output/m.crab.watersd")
-
-plot(m.crab.watersd) # show posteriors and chains
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-2-1.png)
-
-``` r
-summary(m.crab.watersd)
-```
-
-     Family: gaussian 
-      Links: mu = identity 
-    Formula: size ~ water_temp_sd 
-       Data: pie_crab (Number of observations: 392) 
-      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
-             total post-warmup draws = 4000
-
-    Regression Coefficients:
-                  Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    Intercept        13.95      1.14    11.69    16.19 1.00     4136     2889
-    water_temp_sd     0.10      0.15    -0.20     0.40 1.00     4148     2938
-
-    Further Distributional Parameters:
-          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    sigma     3.51      0.13     3.27     3.77 1.00     4421     2807
-
-    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
-    and Tail_ESS are effective sample size measures, and Rhat is the potential
-    scale reduction factor on split chains (at convergence, Rhat = 1).
-
-``` r
-m.crab.watersd$fit
-```
-
-    Inference for Stan model: anon_model.
-    4 chains, each with iter=2000; warmup=1000; thin=1; 
-    post-warmup draws per chain=1000, total post-warmup draws=4000.
-
-                        mean se_mean   sd     2.5%      25%      50%      75%
-    b_Intercept        13.95    0.02 1.14    11.69    13.18    13.94    14.72
-    b_water_temp_sd     0.10    0.00 0.15    -0.20    -0.01     0.10     0.20
-    sigma               3.51    0.00 0.13     3.27     3.43     3.51     3.60
-    Intercept          14.66    0.00 0.18    14.31    14.54    14.66    14.78
-    lprior             -4.54    0.00 0.03    -4.61    -4.56    -4.54    -4.52
-    lp__            -1051.76    0.03 1.22 -1054.98 -1052.32 -1051.43 -1050.85
-                       97.5% n_eff Rhat
-    b_Intercept        16.19  4130    1
-    b_water_temp_sd     0.40  4135    1
-    sigma               3.77  4368    1
-    Intercept          15.01  4175    1
-    lprior             -4.49  4378    1
-    lp__            -1050.38  2105    1
-
-    Samples were drawn using NUTS(diag_e) at Tue Feb  3 14:31:54 2026.
-    For each parameter, n_eff is a crude measure of effective sample size,
-    and Rhat is the potential scale reduction factor on split chains (at 
-    convergence, Rhat=1).
-
 ------------------------------------------------------------------------
 
 # 1. Fiddler crabs
@@ -166,7 +99,7 @@ pie_crab %>%
   ylim(0, NA)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-4-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-3-1.png)
 
 ------------------------------------------------------------------------
 
@@ -198,20 +131,34 @@ $size = intercept + slope*latitude$
 
 ------------------------------------------------------------------------
 
+Time to run the model! There’s a lot here: let’s dig in line-by-line.
+
 ``` r
 # latitude
 m.crab.lat <- 
-  brm(data = pie_crab, 
+  brm(data = pie_crab, # Give the model the pie_crab data
+      # Choose a gaussian (normal) distribution
       family = gaussian,
+      # Specify the model here. 
       size ~ latitude,
+      # Here's where you specifiy different parameters for executing the Markov chains
       iter = 2000, warmup = 1000, chains = 4, cores = 4,
+      # Setting the "seed" sets a given set of random numbers. 
+      # In this case, it makes the randomness of the Markov chain runs reproducible 
+      # (so that both of us get the exact same results when running the model)
       seed = 4,
+      # Save the fitted model object as output - helpful for reloading in the output later
       file = "output/m.crab.lat")
-
-plot(m.crab.lat) # show posteriors and chains
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-6-1.png)
+### Q1.3 What does the “iter” argument do?
+
+Navigate to the `brm` help page to answer: What does the `iter =`
+argument do?
+
+------------------------------------------------------------------------
+
+## 1.3 Assess model
 
 ``` r
 summary(m.crab.lat)
@@ -265,15 +212,145 @@ m.crab.lat$fit
     and Rhat is the potential scale reduction factor on split chains (at 
     convergence, Rhat=1).
 
-## 1.3 Assess model
-
 ------------------------------------------------------------------------
 
 ## 1.4 Interpret model
 
+``` r
+plot(m.crab.lat) # show posteriors and chains
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-8-1.png)
+
+``` r
+summary(m.crab.lat)
+```
+
+     Family: gaussian 
+      Links: mu = identity 
+    Formula: size ~ latitude 
+       Data: pie_crab (Number of observations: 392) 
+      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+             total post-warmup draws = 4000
+
+    Regression Coefficients:
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+    Intercept    -3.61      1.30    -6.09    -1.01 1.00     4116     3192
+    latitude      0.48      0.03     0.42     0.55 1.00     4108     3140
+
+    Further Distributional Parameters:
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+    sigma     2.84      0.10     2.65     3.04 1.00     3758     2852
+
+    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+    and Tail_ESS are effective sample size measures, and Rhat is the potential
+    scale reduction factor on split chains (at convergence, Rhat = 1).
+
 ------------------------------------------------------------------------
 
 ## 1.5 Plot model on the data
+
+------------------------------------------------------------------------
+
+## 1.6 Repeat with a new variable: water temp sd
+
+Let’s repeat this example with a new variable: the water temperature
+standard deviation. The standard deviation (sd) can be used as a metric
+of variability: higher sd means higher variability. We can ask: *is
+higher variability in water temperature associated with fiddler crab
+body size?*
+
+``` r
+pie_crab %>% 
+  ggplot(aes(x = water_temp_sd, y = size)) +
+  geom_point() +
+  # Make the y-axis include 0
+  ylim(0, NA)
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-10-1.png)
+
+### Q1.X Interpret the graph
+
+Does it look like size increases with latitude? Describe how confident
+you are in this interpretation.
+
+------------------------------------------------------------------------
+
+We’ll set up our model to look like:
+
+$size = intercept + slope*water_temp_sd$
+
+------------------------------------------------------------------------
+
+### Q1.XX Set up and run this new model
+
+``` r
+# water temp sd
+m.crab.watersd <- 
+  brm(data = pie_crab, 
+      family = gaussian,
+      size ~ water_temp_sd,
+      iter = 2000, warmup = 1000, chains = 4, cores = 4,
+      seed = 4,
+      file = "output/m.crab.watersd")
+
+plot(m.crab.watersd) # show posteriors and chains
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-11-1.png)
+
+``` r
+summary(m.crab.watersd)
+```
+
+     Family: gaussian 
+      Links: mu = identity 
+    Formula: size ~ water_temp_sd 
+       Data: pie_crab (Number of observations: 392) 
+      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+             total post-warmup draws = 4000
+
+    Regression Coefficients:
+                  Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+    Intercept        13.95      1.14    11.69    16.19 1.00     4136     2889
+    water_temp_sd     0.10      0.15    -0.20     0.40 1.00     4148     2938
+
+    Further Distributional Parameters:
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+    sigma     3.51      0.13     3.27     3.77 1.00     4421     2807
+
+    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+    and Tail_ESS are effective sample size measures, and Rhat is the potential
+    scale reduction factor on split chains (at convergence, Rhat = 1).
+
+``` r
+m.crab.watersd$fit
+```
+
+    Inference for Stan model: anon_model.
+    4 chains, each with iter=2000; warmup=1000; thin=1; 
+    post-warmup draws per chain=1000, total post-warmup draws=4000.
+
+                        mean se_mean   sd     2.5%      25%      50%      75%
+    b_Intercept        13.95    0.02 1.14    11.69    13.18    13.94    14.72
+    b_water_temp_sd     0.10    0.00 0.15    -0.20    -0.01     0.10     0.20
+    sigma               3.51    0.00 0.13     3.27     3.43     3.51     3.60
+    Intercept          14.66    0.00 0.18    14.31    14.54    14.66    14.78
+    lprior             -4.54    0.00 0.03    -4.61    -4.56    -4.54    -4.52
+    lp__            -1051.76    0.03 1.22 -1054.98 -1052.32 -1051.43 -1050.85
+                       97.5% n_eff Rhat
+    b_Intercept        16.19  4130    1
+    b_water_temp_sd     0.40  4135    1
+    sigma               3.77  4368    1
+    Intercept          15.01  4175    1
+    lprior             -4.49  4378    1
+    lp__            -1050.38  2105    1
+
+    Samples were drawn using NUTS(diag_e) at Tue Feb  3 14:31:54 2026.
+    For each parameter, n_eff is a crude measure of effective sample size,
+    and Rhat is the potential scale reduction factor on split chains (at 
+    convergence, Rhat=1).
 
 ------------------------------------------------------------------------
 
@@ -314,7 +391,7 @@ nwt_pikas %>%
   geom_point()
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-7-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-12-1.png)
 
 m.p.1 \<- brm(data = nwt_pikas, family = gaussian, concentration_pg_g \~
 date, iter = 2000, warmup = 1000, chains = 4, cores = 4, seed = 4, file
