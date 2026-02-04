@@ -31,8 +31,6 @@ library(lterdatasampler)
 
 ```
 
-
-
 ------------------------------------------------------------------------
 
 # 1. Fiddler crabs
@@ -79,7 +77,7 @@ Make this graph look a bit nicer! Use the skills you learned earlier in the quar
 
 ```
 
----------
+------------------------------------------------------------------------
 
 Now that you've spent some time pondering the data, let's put together our first model. From lecture, linear models follow the equation:
 
@@ -88,8 +86,6 @@ $y = intercept + slope*x$
 Let's set up our model to look like:
 
 $size = intercept + slope*latitude$
-
-
 
 ------------------------------------------------------------------------
 
@@ -120,13 +116,13 @@ m.crab.lat <-
 
 ### Q1.3 What does the "iter" argument do?
 
-Navigate to the `brm` help page to answer: What does the `iter = ` argument do?
+Navigate to the `brm` help page to answer: What does the `iter =` argument do?
 
-------
+------------------------------------------------------------------------
 
 ## 1.3 Assess model
 
-First, we need to assess whether or not our model actually ran correctly. 
+First, we need to assess whether or not our model actually ran correctly.
 
 ```{r}
 summary(m.crab.lat)
@@ -139,15 +135,16 @@ Let's also look at the chains and the posterior distributions in a graph.
 ```{r}
 plot(m.crab.lat) # show posteriors and chains
 ```
-We're looking for three things:
-1. Are the posterior samples on the left each a smooth distribution, or do they have multiple clear peaks? The latter is a bad sign. They look good in this case.
-2. Are the four chains on the overlapping each other, or are they clearly separate? The latter is a bad sign. We again look good in this case.
-3. Are the four chains flat, or is there a clear trend up or down? The latter is a bad sign. We again look good in this case.
+
+We're looking for three things: 
+
+1.    Are the posterior samples on the left each a smooth distribution, or do they have multiple clear peaks? The latter is a bad sign. They look good in this case. 
+2.    Are the four chains on the overlapping each other, or are they clearly separate? The latter is a bad sign. We again look good in this case.
+3.    Are the four chains flat, or is there a clear trend up or down? The latter is a bad sign. We again look good in this case.
 
 If we fail any of these tests, we would want to try running the MCMC chain with more iterations. We may also need to think hard about whether our model is correctly designed.
 
 ------------------------------------------------------------------------
-
 
 ## 1.4 Interpret model
 
@@ -157,38 +154,51 @@ Now that we feel good that the model fit correctly, let's look at a summary tabl
 summary(m.crab.lat)
 ```
 
-The output reminds us of our model formula that we chose (`size ~ latitude`). Most important to answering our question are the parameter `estimates`. Remember, our model was $size = intercept + slope*latitude$. The `slope` parameter is going to tell us what the effect of latitude is. For every one unit change of latitude, what is the effect on size? We need to translate that interpretation to the units that those variables represent: the slope value is thus *for every one degree of latitude, carapace size changes this much in millimeters*. 
+The output reminds us of our model formula that we chose (`size ~ latitude`). Most important to answering our question are the parameter `estimates`. Remember, our model was $size = intercept + slope*latitude$. The `slope` parameter is going to tell us what the effect of latitude is. For every one unit change of latitude, what is the effect on size? We need to translate that interpretation to the units that those variables represent: the slope value is thus *for every one degree of latitude, carapace size changes this much in millimeters*.
 
 Looking at our table, we see the estimate for `latitude` is 0.48: This indicates that the model estimated that for every 1 degree latitude, carapace width increases by 0.48 mm.
+
+------
 
 Earlier you were asked to "*describe how confident you are in this interpretation*" when qualitatively interpreting the graph of `size` vs `latitude`. Now, let's examine how much confidence the model has in the size-latitude association. Are only positive (non-zero) slopes compatible with the data? Or would a flat (slope of zero) association also be compatible?
 
 To assess this, we can look at the lower and upper 95% Credible Interval columns (`l-95% CI` and `u-95% CI`, respectively) and see if that interval range intersects with zero. We can see that our slope estimate (the estimate of `latitude`) ranges from 0.42 to 0.55 - zero is not included in this range. Therefore, we can reasonably conclude here that, given our model, the effect of latitude on body size has a 95% chance of being between those values, and importantly, NOT zero!
 
+-------
+
+In the results section of a paper, we would write something along these lines:
+
+*We found that crab size increased with latitude, with an increase of 0.48mm of carapace width per 1 degree of latitude. Our 95% credible intervals were between 0.42 and 0.55 mm/degree, suggesting that given our model, the effect of latitude on carapace width is different from zero.*
+
+-------
+
 ### Bonus
+
 Let's calculate the probability of a zero slope! The MCMC chains are big columns of samples from the posterior distribution, so we can add up the proportion of slope estimates that are zero or lower.
 
 ```{r}
-as_draws_df(m.crab.lat) |> # extract the posterior samples from the model estimate
-  select(b_latitude) |> # pull out the latitude samples from all 4 chains. we'll get a warning that we can ignore.
+as_draws_df(m.crab.lat)  %>%  # extract the posterior samples from the model estimate
+  select(b_latitude)  %>%  # pull out the latitude samples from all 4 chains. we'll get a warning that we can ignore.
   summarize(p_slope_lessthanorequalto_zero = sum(b_latitude <= 0)/length(b_latitude))
 
 ```
+
 Ok! The model reports a zero chance of a slope less than or equal to zero. Feel free to try other thresholds to explore (e.g., what's the probability the slope is greater than 0.5 mm per degree latitude?).
 
 ------------------------------------------------------------------------
 
-
 ## 1.5 Plot model on the data
 
-Here we are going to plot the data and the model output in two different ways:
--   **Compatibility interval** shows uncertainty in the average response (the estimate for the slope)
--   **Prediction interval** shows uncertainty in the data around the average response (the estimate for the slope)
+Here we are going to plot the data and the model output in two different ways: 
+
+-     **Compatibility interval** shows uncertainty in the average response (the estimate for the slope) 
+-     **Prediction interval** shows uncertainty in the data around the average response (the estimate for the slope)
 
 ```{r}
 # compatibility interval. the shows uncertainty in the average response.
 confm.crab.lat <- predict_response(m.crab.lat)
 plot(confm.crab.lat, show_data = TRUE)
+
 ```
 
 ```{r}
@@ -203,11 +213,11 @@ plot(confm.crab.lat, show_data = TRUE)
 
 Let's repeat this example with a new variable: the water temperature standard deviation, `water_temp_sd`. The standard deviation (sd) can be used as a metric of variability: higher sd means higher variability. We can ask: *is higher variability in water temperature associated with fiddler crab body size?*
 
-### Q1.X Make a hypothesis
+### Q1.4 Make a hypothesis
 
 *Before* you look at the data, what direction of an effect do you expect? Do you think higher variability would be associated with larger or smaller crabs? Why? Please write 1-2 sentences.
 
-### Graph the data
+### Q1.5 Graph the data
 
 ```{r}
 pie_crab %>% 
@@ -217,22 +227,23 @@ pie_crab %>%
   ylim(0, NA)
 ```
 
-### Q1.X Interpret the graph
+### Q1.6 Interpret the graph
 
-Does it look like size increases with latitude? Describe how confident you are in this interpretation.
+Does it look like size changes with the sd of water temperature? Describe how confident you are in this interpretation.
 
--------------
+------------------------------------------------------------------------
 
 We'll set up our model to look like:
 
 $size = intercept + slope*water_temp_sd$
 
---------
+------------------------------------------------------------------------
 
-### Q1.XX Set up and run this new model
+### Q1.7 Set up and run this new model
+
+Keep all of the output the same except for the parts where you specify 1) the model formula and 2) the `file = ` output. Name this new model `m.crab.watersd` to distinguish it from the latitude model.
 
 ```{r}
-
 # water temp sd
 m.crab.watersd <- 
   brm(data = pie_crab, 
@@ -241,66 +252,135 @@ m.crab.watersd <-
       iter = 2000, warmup = 1000, chains = 4, cores = 4,
       seed = 4,
       file = "output/m.crab.watersd")
+```
 
+
+```{r}
 plot(m.crab.watersd) # show posteriors and chains
 summary(m.crab.watersd)
 
 ```
 
+--------------
 
-----------
+### Q1.8 Assess the model
+
+Assess whether the model ran correctly by looking at R hat, the chains, and the posterior distributions using the plot() and summary() functions as below. Describe your thought process about whether the model ran correctly in 1-2 sentences.
+
+```{r execute = FALSE}
+# show posteriors and chains
+plot(m.crab.watersd) 
+
+# show summary, including rhat
+summary(m.crab.watersd)
+
+```
+
+---------
+
+## Interpret the model
+
+Based on the summary, do 
+
+```{r}
+# Show model output
+summary(m.crab.watersd)
+```
+
+
+------------------------------------------------------------------------
+
+## 1.7 Bonus: Polynomial regression
+
+
+
+--------
+
 
 # 2. Back to Pikas!
 
 ![adultPikaNiwotRidge_SaraMcLaughlin](adultPikaNiwotRidge_SaraMcLaughlin.jpeg)
 
+We can't stay away from the cute pikas for too long! In this section you will apply the statistical thinking you've learned to the pika dataset in one of two ways: you will try and see whether or not the stress of pikas is explained by either 1) elevation or 2) day of year.
+
+Let's look at the data again
+
 ```{r}
 head(nwt_pikas)
 ```
 
+Date is one of the columns, but we specifically want day of year as a metric of how late in the season it is. This also allows us to interpret our model's output a little more informatively. 
 
-## 2.1 Pika stress ~ elevation
+We can extract day of year using the `lubridate` package (within `tidyverse`), which is all about working with dates and times:
+
+```{r}
+nwt_pikas_doy <- nwt_pikas %>% 
+  # Add a new column called day_of_year
+  # yday extracts the day of year from the date column
+  mutate(day_of_year = yday(date)) %>% 
+  # relocate the day_of_year column after the date column
+  relocate(day_of_year, .after = date)
+
+head(nwt_pikas_doy)
+```
+
+Now it's time to choose! In this section, choose between explaining the stress variable as a function of either day of year or elevation. If you have extra time at the end and would like more practice, you may optionally repeat the analysis on the other variable as well.
+
+---------
 
 ### Q2.1 Make a question
 
-Clearly articulate the question that you want to ask
+Clearly articulate the question that you want to ask in one sentence.
 
--------
+------------------------------------------------------------------------
 
 ### Q2.2 Make a hypothesis
 
-*Before* you look at the data, what direction of an effect do you expect? Do you think higher elevation would be associated with more or less stressed pikas? Why? Please write 1-2 sentences.
+*Before* you look at the data, what direction of an effect do you expect? Do you think a larger value of the predictor you chose would be associated with more or less stressed pikas? Why? Please write 1-2 sentences.
 
--------
+------------------------------------------------------------------------
 
 ### Q2.3 Graph the data
 
--------
+As before, your response variable (stress, which is measured as `concentration_pg_g`) should be on the y-axis, with your predictor variable on the x.
+
+------------------------------------------------------------------------
 
 ### Q2.4 Set up and run a model
 
--------
+Make sure you store your model output as something informative to you.
 
+------------------------------------------------------------------------
 
 ### Q2.5 Assess the model
 
--------
+Assess whether the model ran correctly by looking at R hat, the chains, and the posterior distributions. Describe your thought process about whether the model ran correctly in 1-2 sentences.
 
-Assess whether the model ran correctly by looking at R hat, the chains, and the posterior distributions. Describe your thought process
+------------------------------------------------------------------------
 
 ### Q2.6 Interpret the model
 
--------
+Interpret your model by answering:
 
+1.    What is the effect of your predictor? Remember to describe the effect using the units to make it biologically meaningful.
+2.    Is the effect reasonably different from zero? How do you know?
 
+---------
 
-## 2.2 Pika stress ~ date
+### Q2.7 Write a small results paragraph
 
-### Q2.10 Export graphs
+Including the information from Q2.6, write 2-3 sentences as if you were writing the results section of a scientific paper. Include a conclusion sentence that summarizes your finding.
 
-Export both graphs and both interpretations to this slide deck: <https://docs.google.com/presentation/d/1AJVu0eq5-OoRGi4UlBervrqKbFHOINvAB-8u0JaFzYM/edit?usp=sharing>
+------------------------------------------------------------------------
 
 ### Render to PDF
+
+When you have finished, practice the GitHub push/pull:
+
+-   Pull to check for updates to the remote branch
+-   Stage your edits (after saving your document!) by checking the documents you'd like to push
+-   Commit your changes with a commit message
+-   Push your changes to the remote branch
 
 And submit the well-labeled PDF on Gradescope. Thanks!
 
@@ -347,5 +427,3 @@ plot(m.p.date) # show posteriors and chains
 summary(m.p.date) 
 
 ```
-
-
