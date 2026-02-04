@@ -40,7 +40,7 @@ library(lterdatasampler) # for built-in datasets
 
 # 1. Fiddler crabs
 
-Fiddler crab picture here
+![fiddler crab - Jim Mullhaupt - flickr](fiddler_crab.jpeg)
 
 The data today is fiddler crab size data from 13 salt marshes from
 Florida to Massachusetts. Crab size was measured as carapace width in
