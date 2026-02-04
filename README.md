@@ -209,6 +209,9 @@ the model would probably not pick up a slope of exactly zero; it would
 likely be small, but not zero. So is 0.48 reasonably different from
 zero?
 
+**The prior paragraph feels like it’s a frequentist interpretation - is
+this still correct in this Bayesian framework?**
+
 To assess this, we look at the lower and upper 95% Credible Interval
 columns (`l-95% CI` and `u-95% CI` respectively) and see if that
 interval range intersects with zero. We can see that our slope estimate
@@ -295,15 +298,23 @@ m.crab.lat$fit
 
 ## 1.5 Plot model on the data
 
+``` r
+# compatibility interval
+confm.crab.lat <- predict_response(m.crab.lat)
+plot(confm.crab.lat, show_data = TRUE)
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-10-1.png)
+
 ------------------------------------------------------------------------
 
 ## 1.6 Repeat with a new variable: water temp sd
 
 Let’s repeat this example with a new variable: the water temperature
-standard deviation. The standard deviation (sd) can be used as a metric
-of variability: higher sd means higher variability. We can ask: *is
-higher variability in water temperature associated with fiddler crab
-body size?*
+standard deviation, `water_temp_sd`. The standard deviation (sd) can be
+used as a metric of variability: higher sd means higher variability. We
+can ask: *is higher variability in water temperature associated with
+fiddler crab body size?*
 
 ``` r
 pie_crab %>% 
@@ -313,7 +324,7 @@ pie_crab %>%
   ylim(0, NA)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-10-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-11-1.png)
 
 ### Q1.X Interpret the graph
 
@@ -343,7 +354,7 @@ m.crab.watersd <-
 plot(m.crab.watersd) # show posteriors and chains
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-11-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-12-1.png)
 
 ``` r
 summary(m.crab.watersd)
@@ -436,19 +447,187 @@ nwt_pikas %>%
   geom_point()
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-12-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-13-1.png)
 
-m.p.1 \<- brm(data = nwt_pikas, family = gaussian, concentration_pg_g \~
-date, iter = 2000, warmup = 1000, chains = 4, cores = 4, seed = 4, file
-= “output/m.p.1”)
+Elevation model
 
-plot(m.p.1) \# show posteriors and chains summary(m.p.1) m.p.1\$fit
+``` r
+m.p.elev <- brm(
+  data = nwt_pikas, 
+  family = gaussian, 
+  concentration_pg_g ~ elev_m, 
+  iter = 2000, warmup = 1000, chains = 4, cores = 4, 
+  seed = 4, 
+  file = "output/m.p.elev")
 
-# Elevation model
+plot(m.p.elev) # show posteriors and chains 
+```
 
-m.p.elev \<- brm(data = nwt_pikas, family = gaussian, concentration_pg_g
-\~ elev_m, iter = 2000, warmup = 1000, chains = 4, cores = 4, seed = 4,
-file = “output/m.p.elev”)
+![](README_files/figure-commonmark/unnamed-chunk-14-1.png)
 
-plot(m.p.elev) \# show posteriors and chains summary(m.p.elev)
-m.p.elev\$fit \`\`\`
+``` r
+summary(m.p.elev) 
+```
+
+     Family: gaussian 
+      Links: mu = identity 
+    Formula: concentration_pg_g ~ elev_m 
+       Data: nwt_pikas (Number of observations: 109) 
+      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+             total post-warmup draws = 4000
+
+    Regression Coefficients:
+              Estimate Est.Error  l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+    Intercept  6003.46   9123.36 -11248.51 23760.08 1.00     3779     2818
+    elev_m       -0.24      2.59     -5.29     4.65 1.00     3779     2662
+
+    Further Distributional Parameters:
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+    sigma  3012.69    208.81  2637.17  3455.33 1.00     4068     2918
+
+    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+    and Tail_ESS are effective sample size measures, and Rhat is the potential
+    scale reduction factor on split chains (at convergence, Rhat = 1).
+
+``` r
+m.p.elev$fit
+```
+
+    Inference for Stan model: anon_model.
+    4 chains, each with iter=2000; warmup=1000; thin=1; 
+    post-warmup draws per chain=1000, total post-warmup draws=4000.
+
+                    mean se_mean      sd      2.5%      25%      50%      75%
+    b_Intercept  6003.46  148.63 9123.36 -11248.51  -311.94  5955.89 12158.99
+    b_elev_m       -0.24    0.04    2.59     -5.29    -1.98    -0.21     1.56
+    sigma        3012.69    3.29  208.81   2637.17  2866.36  2998.90  3146.80
+    Intercept    5165.82    4.48  282.73   4609.46  4977.93  5164.46  5356.99
+    lprior        -17.91    0.00    0.09    -18.10   -17.96   -17.90   -17.84
+    lp__        -1037.38    0.03    1.25  -1040.56 -1037.93 -1037.05 -1036.48
+                   97.5% n_eff Rhat
+    b_Intercept 23760.08  3768    1
+    b_elev_m        4.65  3769    1
+    sigma        3455.33  4026    1
+    Intercept    5721.93  3987    1
+    lprior        -17.75  3685    1
+    lp__        -1035.97  2183    1
+
+    Samples were drawn using NUTS(diag_e) at Tue Feb  3 14:24:58 2026.
+    For each parameter, n_eff is a crude measure of effective sample size,
+    and Rhat is the potential scale reduction factor on split chains (at 
+    convergence, Rhat=1).
+
+Date model
+
+``` r
+m.p.date <- brm(
+  data = nwt_pikas, 
+  family = gaussian, 
+  concentration_pg_g ~ date, 
+  iter = 2000, warmup = 1000, chains = 4, cores = 4, 
+  seed = 4, 
+  file = "output/m.p.date")
+```
+
+    Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
+    using C compiler: ‘Apple clang version 12.0.5 (clang-1205.0.22.9)’
+    using SDK: ‘MacOSX11.3.sdk’
+    clang -arch arm64 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I"/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/Rcpp/include/"  -I"/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/"  -I"/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/unsupported"  -I"/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/StanHeaders/include/src/"  -I"/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/StanHeaders/include/"  -I"/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppParallel/include/"  -I"/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/rstan/include" -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DUSE_STANC3 -DSTRICT_R_HEADERS  -DBOOST_PHOENIX_NO_VARIADIC_EXPRESSION  -D_HAS_AUTO_PTR_ETC=0  -include '/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/StanHeaders/include/stan/math/prim/fun/Eigen.hpp'  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
+    In file included from <built-in>:1:
+    In file included from /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/StanHeaders/include/stan/math/prim/fun/Eigen.hpp:22:
+    In file included from /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+    In file included from /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/Eigen/Core:19:
+    /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:679:10: fatal error: 'cmath' file not found
+    #include <cmath>
+             ^~~~~~~
+    1 error generated.
+    make: *** [foo.o] Error 1
+
+``` r
+plot(m.p.date) # show posteriors and chains 
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-15-1.png)
+
+``` r
+summary(m.p.date) 
+```
+
+     Family: gaussian 
+      Links: mu = identity 
+    Formula: concentration_pg_g ~ date 
+       Data: nwt_pikas (Number of observations: 109) 
+      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+             total post-warmup draws = 4000
+
+    Regression Coefficients:
+                Estimate Est.Error  l-95% CI   u-95% CI Rhat Bulk_ESS Tail_ESS
+    Intercept 1055447.39 171238.10 724770.24 1400058.52 1.00     3896     3011
+    date          -59.20      9.65    -78.62     -40.57 1.00     3896     3011
+
+    Further Distributional Parameters:
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+    sigma  2587.50    175.54  2271.18  2955.03 1.00     3946     2709
+
+    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+    and Tail_ESS are effective sample size measures, and Rhat is the potential
+    scale reduction factor on split chains (at convergence, Rhat = 1).
+    eration:  600 / 2000 [ 30%]  (Warmup)
+    Chain 1: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+    Chain 2: Iteration:  800 / 2000 [ 40%]  (Warmup)
+    Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+    Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+    Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+    Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+    Chain 2: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+    Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
+    Chain 1: 
+    Chain 1:  Elapsed Time: 0.084 seconds (Warm-up)
+    Chain 1:                0.009 seconds (Sampling)
+    Chain 1:                0.093 seconds (Total)
+    Chain 1: 
+    Chain 2: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+    Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+    Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+    Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
+    Chain 2: 
+    Chain 2:  Elapsed Time: 0.075 seconds (Warm-up)
+    Chain 2:                0.009 seconds (Sampling)
+    Chain 2:                0.084 seconds (Total)
+    Chain 2: 
+    Chain 3: Iteration:  200 / 2000 [ 10%]  (Warmup)
+    Chain 3: Iteration:  400 / 2000 [ 20%]  (Warmup)
+    Chain 4: Iteration:  200 / 2000 [ 10%]  (Warmup)
+    Chain 3: Iteration:  600 / 2000 [ 30%]  (Warmup)
+    Chain 4: Iteration:  400 / 2000 [ 20%]  (Warmup)
+    Chain 3: Iteration:  800 / 2000 [ 40%]  (Warmup)
+    Chain 4: Iteration:  600 / 2000 [ 30%]  (Warmup)
+    Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+    Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+    Chain 4: Iteration:  800 / 2000 [ 40%]  (Warmup)
+    Chain 3: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+    Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+    Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+    Chain 3: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+    Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+    Chain 4: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+    Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+    Chain 4: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+    Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
+    Chain 3: 
+    Chain 3:  Elapsed Time: 0.089 seconds (Warm-up)
+    Chain 3:                0.008 seconds (Sampling)
+    Chain 3:                0.097 seconds (Total)
+    Chain 3: 
+    Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+    Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+    Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
+    Chain 4: 
+    Chain 4:  Elapsed Time: 0.087 seconds (Warm-up)
+    Chain 4:                0.01 seconds (Sampling)
+    Chain 4:                0.097 seconds (Total)
+    Chain 4: 
+
+``` r
+m.p.date$fit
+```

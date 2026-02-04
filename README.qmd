@@ -138,6 +138,8 @@ Looking at our table, we see the estimate for `latitude` is 0.48: This indicates
 
 Earlier you were asked to "*describe how confident you are in this interpretation*" when qualitatively interpreting the graph of `size` vs `latitude`. How credible is it that the model output's slope of 0.48 is actually different from zero? In other words, if the data was truly just randomly plopped on that graph, with no relationship between x and y, the model would probably not pick up a slope of exactly zero; it would likely be small, but not zero. So is 0.48 reasonably different from zero? 
 
+**The prior paragraph feels like it's a frequentist interpretation - is this still correct in this Bayesian framework?**
+
 To assess this, we look at the lower and upper 95% Credible Interval columns (`l-95% CI` and `u-95% CI` respectively) and see if that interval range intersects with zero. We can see that our slope estimate (the estimate of `latitude`) ranges from 0.42 to 0.55 - zero is not included in this range, so we can reasonably conclude here that the true effect of latitude on body size is somewhere between those values, and importantly, NOT zero!
 
 ------------------------------------------------------------------------
@@ -169,13 +171,17 @@ m.crab.lat$fit
 
 ## 1.5 Plot model on the data
 
-
+```{r}
+# compatibility interval
+confm.crab.lat <- predict_response(m.crab.lat)
+plot(confm.crab.lat, show_data = TRUE)
+```
 
 ------------------------------------------------------------------------
 
 ## 1.6 Repeat with a new variable: water temp sd
 
-Let's repeat this example with a new variable: the water temperature standard deviation. The standard deviation (sd) can be used as a metric of variability: higher sd means higher variability. We can ask: *is higher variability in water temperature associated with fiddler crab body size?*
+Let's repeat this example with a new variable: the water temperature standard deviation, `water_temp_sd`. The standard deviation (sd) can be used as a metric of variability: higher sd means higher variability. We can ask: *is higher variability in water temperature associated with fiddler crab body size?*
 
 ```{r}
 pie_crab %>% 
@@ -239,12 +245,40 @@ nwt_pikas %>%
   geom_point()
 ```
 
-m.p.1 \<- brm(data = nwt_pikas, family = gaussian, concentration_pg_g \~ date, iter = 2000, warmup = 1000, chains = 4, cores = 4, seed = 4, file = "output/m.p.1")
+Elevation model
 
-plot(m.p.1) \# show posteriors and chains summary(m.p.1) m.p.1\$fit
+```{r}
 
-# Elevation model
+m.p.elev <- brm(
+  data = nwt_pikas, 
+  family = gaussian, 
+  concentration_pg_g ~ elev_m, 
+  iter = 2000, warmup = 1000, chains = 4, cores = 4, 
+  seed = 4, 
+  file = "output/m.p.elev")
 
-m.p.elev \<- brm(data = nwt_pikas, family = gaussian, concentration_pg_g \~ elev_m, iter = 2000, warmup = 1000, chains = 4, cores = 4, seed = 4, file = "output/m.p.elev")
+plot(m.p.elev) # show posteriors and chains 
+summary(m.p.elev) 
+m.p.elev$fit
 
-plot(m.p.elev) \# show posteriors and chains summary(m.p.elev) m.p.elev\$fit \`\`\`
+```
+
+Date model
+
+```{r}
+
+m.p.date <- brm(
+  data = nwt_pikas, 
+  family = gaussian, 
+  concentration_pg_g ~ date, 
+  iter = 2000, warmup = 1000, chains = 4, cores = 4, 
+  seed = 4, 
+  file = "output/m.p.date")
+
+plot(m.p.date) # show posteriors and chains 
+summary(m.p.date) 
+m.p.date$fit
+
+```
+
+
