@@ -239,7 +239,7 @@ Does it look like size changes with the sd of water temperature? Describe how co
 
 We'll set up our model to look like:
 
-$size = intercept + slope*water_temp_sd$
+$size = intercept + slope*watertempsd$
 
 ------------------------------------------------------------------------
 

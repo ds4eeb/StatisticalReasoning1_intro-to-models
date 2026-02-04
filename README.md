@@ -379,7 +379,7 @@ Describe how confident you are in this interpretation.
 
 We’ll set up our model to look like:
 
-$size = intercept + slope*water_temp_sd$
+$size = intercept + slope*watertempsd$
 
 ------------------------------------------------------------------------
 
