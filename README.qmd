@@ -181,8 +181,14 @@ Ok! The model reports a zero chance of a slope less than or equal to zero. Feel 
 ## 1.5 Plot model on the data
 
 ```{r}
-# compatibility interval
+# compatibility interval. the shows uncertainty in the average response.
 confm.crab.lat <- predict_response(m.crab.lat)
+plot(confm.crab.lat, show_data = TRUE)
+```
+
+```{r}
+# prediction interval. this shows uncertainty in the data around the average response.
+confm.crab.lat <- predict_response(m.crab.lat, interval = 'prediction')
 plot(confm.crab.lat, show_data = TRUE)
 ```
 
