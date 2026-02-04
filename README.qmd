@@ -39,7 +39,7 @@ library(lterdatasampler)
 
 Fiddler crab picture here
 
-The data today is fiddler crab size data from 13 salt marshes from Florida to Massachusetts. Crab size was measured as carapace width. Air and water temperature data from nearby monitoring programs are also included.
+The data today is fiddler crab size data from 13 salt marshes from Florida to Massachusetts. Crab size was measured as carapace width in mm. Air and water temperature data from nearby monitoring programs are also included in Celsius.
 
 ```{r}
 head(pie_crab)
@@ -73,7 +73,7 @@ Interpret this graph: Does it look like size increases with latitude? Describe h
 
 ### Q1.2 Beautify this graph
 
-Make this graph look a bit nicer!
+Make this graph look a bit nicer! Use the skills you learned earlier in the quarter.
 
 ```{r}
 
@@ -100,16 +100,17 @@ $size = intercept + slope*latitude$
 Time to run the model! There's a lot here: let's dig in line-by-line.
 
 ```{r}
-# latitude
+# latitude model
 m.crab.lat <- 
   brm(data = pie_crab, # Give the model the pie_crab data
       # Choose a gaussian (normal) distribution
       family = gaussian,
       # Specify the model here. 
       size ~ latitude,
-      # Here's where you specifiy different parameters for executing the Markov chains
+      # Here's where you specify parameters for executing the Markov chains
+      # We're using similar to the defaults, except we set cores to 4 so the analysis runs faster than the default of 1
       iter = 2000, warmup = 1000, chains = 4, cores = 4,
-      # Setting the "seed" sets a given set of random numbers. 
+      # Setting the "seed" determines which random numbers will get sampled.
       # In this case, it makes the randomness of the Markov chain runs reproducible 
       # (so that both of us get the exact same results when running the model)
       seed = 4,
@@ -123,51 +124,59 @@ Navigate to the `brm` help page to answer: What does the `iter = ` argument do?
 
 ------
 
+## 1.3 Assess model
 
-## 1.3 Interpret model
-
-Let's look at our summary table of our model's output.
-
-```{r}
-summary(m.crab.lat)
-```
-
-The output reminds us of our model formula that we chose (`size ~ latitude`). Most important to answering our question are the parameter `estimates`. Remember, our model was $size = intercept + slope*latitude$. The `slope` parameter is going to tell us what the effect of latitude is: for instance, for every one unit of latitude, what is the effect on size. We need to translate that to the units that those variables represent: the slope value is thus *for every one degree of latitude, carapace size changes this much in millimeters*. 
-
-Looking at our table, we see the estimate for `latitude` is 0.48: This indicates that the model estimated that for every 1 degree latitude, carapace width increases by 0.48mm.
-
-Earlier you were asked to "*describe how confident you are in this interpretation*" when qualitatively interpreting the graph of `size` vs `latitude`. How credible is it that the model output's slope of 0.48 is actually different from zero? In other words, if the data was truly just randomly plopped on that graph, with no relationship between x and y, the model would probably not pick up a slope of exactly zero; it would likely be small, but not zero. So is 0.48 reasonably different from zero? 
-
-**The prior paragraph feels like it's a frequentist interpretation - is this still correct in this Bayesian framework?**
-
-To assess this, we look at the lower and upper 95% Credible Interval columns (`l-95% CI` and `u-95% CI` respectively) and see if that interval range intersects with zero. We can see that our slope estimate (the estimate of `latitude`) ranges from 0.42 to 0.55 - zero is not included in this range, so we can reasonably conclude here that the true effect of latitude on body size is somewhere between those values, and importantly, NOT zero!
-
-------------------------------------------------------------------------
-
-## 1.4 Assess model
-
-Now we need to assess whether or not our model actually ran correctly. 
+First, we need to assess whether or not our model actually ran correctly. 
 
 ```{r}
 summary(m.crab.lat)
 ```
 
-We do this by looking at the `Rhat` (R hat) column, which should be very close to 1. If you remember from lecture, this model runs multiple chains that converge on estimates for the slope and the intercept. An R hat of 1 tells us that those four chains converged on the same estimate. This looks fine for us!
+We do this in part by looking at the `Rhat` (R hat) column, which should be very close to 1. If you remember from lecture, this model runs multiple chains that converge on estimates for the slope and the intercept. An R hat of 1 tells us that those four chains converged on the same estimate. This looks fine for us!
 
-# NEED HELP ASSESSING SIGMA
-
-We also need to look at the sigma value. Need help assessing this!!!
-
+Let's also look at the chains and the posterior distributions in a graph.
 ```{r}
 plot(m.crab.lat) # show posteriors and chains
 ```
+We're looking for three things:
+1. Are the posterior samples on the left each a smooth distribution, or do they have multiple clear peaks? The latter is a bad sign. They look good in this case.
+2. Are the four chains on the overlapping each other, or are they clearly separate? The latter is a bad sign. We again look good in this case.
+3. Are the four chains flat, or is there a clear trend up or down? The latter is a bad sign. We again look good in this case.
 
-```{r}
-m.crab.lat$fit
-```
-
+If we fail any of these tests, we would want to try running the MCMC chain with more iterations. We may also need to think hard about whether our model is correctly designed.
 
 ------------------------------------------------------------------------
+
+
+## 1.4 Interpret model
+
+Now that we feel good that the model fit correctly, let's look at a summary table of our model's output.
+
+```{r}
+summary(m.crab.lat)
+```
+
+The output reminds us of our model formula that we chose (`size ~ latitude`). Most important to answering our question are the parameter `estimates`. Remember, our model was $size = intercept + slope*latitude$. The `slope` parameter is going to tell us what the effect of latitude is. For every one unit change of latitude, what is the effect on size? We need to translate that interpretation to the units that those variables represent: the slope value is thus *for every one degree of latitude, carapace size changes this much in millimeters*. 
+
+Looking at our table, we see the estimate for `latitude` is 0.48: This indicates that the model estimated that for every 1 degree latitude, carapace width increases by 0.48 mm.
+
+Earlier you were asked to "*describe how confident you are in this interpretation*" when qualitatively interpreting the graph of `size` vs `latitude`. Now, let's examine how much confidence the model has in the size-latitude association. Are only positive (non-zero) slopes compatible with the data? Or would a flat (slope of zero) association also be compatible?
+
+To assess this, we can look at the lower and upper 95% Credible Interval columns (`l-95% CI` and `u-95% CI`, respectively) and see if that interval range intersects with zero. We can see that our slope estimate (the estimate of `latitude`) ranges from 0.42 to 0.55 - zero is not included in this range. Therefore, we can reasonably conclude here that, given our model, the effect of latitude on body size has a 95% chance of being between those values, and importantly, NOT zero!
+
+### Bonus
+Let's calculate the probability of a zero slope! The MCMC chains are big columns of samples from the posterior distribution, so we can add up the proportion of slope estimates that are zero or lower.
+
+```{r}
+as_draws_df(m.crab.lat) |> # extract the posterior samples from the model estimate
+  select(b_latitude) |> # pull out the latitude samples from all 4 chains. we'll get a warning that we can ignore.
+  summarize(p_slope_lessthanorequalto_zero = sum(b_latitude <= 0)/length(b_latitude))
+
+```
+Ok! The model reports a zero chance of a slope less than or equal to zero. Feel free to try other thresholds to explore (e.g., what's the probability the slope is greater than 0.5 mm per degree latitude?).
+
+------------------------------------------------------------------------
+
 
 ## 1.5 Plot model on the data
 
@@ -182,6 +191,11 @@ plot(confm.crab.lat, show_data = TRUE)
 ## 1.6 Repeat with a new variable: water temp sd
 
 Let's repeat this example with a new variable: the water temperature standard deviation, `water_temp_sd`. The standard deviation (sd) can be used as a metric of variability: higher sd means higher variability. We can ask: *is higher variability in water temperature associated with fiddler crab body size?*
+
+### Q1.X Make a hypothesis
+*Before* you look at the data, what direction of an effect do you expect? Do you think higher variability would be associated with larger or smaller crabs? Why? Please write 1-2 sentences.
+
+### Graph the data
 
 ```{r}
 pie_crab %>% 
@@ -218,7 +232,6 @@ m.crab.watersd <-
 
 plot(m.crab.watersd) # show posteriors and chains
 summary(m.crab.watersd)
-m.crab.watersd$fit
 
 ```
 
@@ -259,7 +272,6 @@ m.p.elev <- brm(
 
 plot(m.p.elev) # show posteriors and chains 
 summary(m.p.elev) 
-m.p.elev$fit
 
 ```
 
@@ -277,7 +289,6 @@ m.p.date <- brm(
 
 plot(m.p.date) # show posteriors and chains 
 summary(m.p.date) 
-m.p.date$fit
 
 ```
 
