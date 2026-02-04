@@ -124,36 +124,52 @@ Navigate to the `brm` help page to answer: What does the `iter = ` argument do?
 ------
 
 
-## 1.3 Assess model
+## 1.3 Interpret model
 
-
+Let's look at our summary table of our model's output.
 
 ```{r}
 summary(m.crab.lat)
 ```
 
+The output reminds us of our model formula that we chose (`size ~ latitude`). Most important to answering our question are the parameter `estimates`. Remember, our model was $size = intercept + slope*latitude$. The `slope` parameter is going to tell us what the effect of latitude is: for instance, for every one unit of latitude, what is the effect on size. We need to translate that to the units that those variables represent: the slope value is thus *for every one degree of latitude, carapace size changes this much in millimeters*. 
 
-```{r}
-m.crab.lat$fit
-```
+Looking at our table, we see the estimate for `latitude` is 0.48: This indicates that the model estimated that for every 1 degree latitude, carapace width increases by 0.48mm.
+
+Earlier you were asked to "*describe how confident you are in this interpretation*" when qualitatively interpreting the graph of `size` vs `latitude`. How credible is it that the model output's slope of 0.48 is actually different from zero? In other words, if the data was truly just randomly plopped on that graph, with no relationship between x and y, the model would probably not pick up a slope of exactly zero; it would likely be small, but not zero. So is 0.48 reasonably different from zero? 
+
+To assess this, we look at the lower and upper 95% Credible Interval columns (`l-95% CI` and `u-95% CI` respectively) and see if that interval range intersects with zero. We can see that our slope estimate (the estimate of `latitude`) ranges from 0.42 to 0.55 - zero is not included in this range, so we can reasonably conclude here that the true effect of latitude on body size is somewhere between those values, and importantly, NOT zero!
 
 ------------------------------------------------------------------------
 
-## 1.4 Interpret model
+## 1.4 Assess model
 
+Now we need to assess whether or not our model actually ran correctly. 
+
+```{r}
+summary(m.crab.lat)
+```
+
+We do this by looking at the `Rhat` (R hat) column, which should be very close to 1. If you remember from lecture, this model runs multiple chains that converge on estimates for the slope and the intercept. An R hat of 1 tells us that those four chains converged on the same estimate. This looks fine for us!
+
+# NEED HELP ASSESSING SIGMA
+
+We also need to look at the sigma value. Need help assessing this!!!
 
 ```{r}
 plot(m.crab.lat) # show posteriors and chains
 ```
 
-
 ```{r}
-summary(m.crab.lat)
+m.crab.lat$fit
 ```
+
 
 ------------------------------------------------------------------------
 
 ## 1.5 Plot model on the data
+
+
 
 ------------------------------------------------------------------------
 

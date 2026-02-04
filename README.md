@@ -158,7 +158,9 @@ argument do?
 
 ------------------------------------------------------------------------
 
-## 1.3 Assess model
+## 1.3 Interpret model
+
+Let’s look at our summary table of our model’s output.
 
 ``` r
 summary(m.crab.lat)
@@ -183,6 +185,83 @@ summary(m.crab.lat)
     Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
     and Tail_ESS are effective sample size measures, and Rhat is the potential
     scale reduction factor on split chains (at convergence, Rhat = 1).
+
+The output reminds us of our model formula that we chose
+(`size ~ latitude`). Most important to answering our question are the
+parameter `estimates`. Remember, our model was
+$size = intercept + slope*latitude$. The `slope` parameter is going to
+tell us what the effect of latitude is: for instance, for every one unit
+of latitude, what is the effect on size. We need to translate that to
+the units that those variables represent: the slope value is thus *for
+every one degree of latitude, carapace size changes this much in
+millimeters*.
+
+Looking at our table, we see the estimate for `latitude` is 0.48: This
+indicates that the model estimated that for every 1 degree latitude,
+carapace width increases by 0.48mm.
+
+Earlier you were asked to “*describe how confident you are in this
+interpretation*” when qualitatively interpreting the graph of `size` vs
+`latitude`. How credible is it that the model output’s slope of 0.48 is
+actually different from zero? In other words, if the data was truly just
+randomly plopped on that graph, with no relationship between x and y,
+the model would probably not pick up a slope of exactly zero; it would
+likely be small, but not zero. So is 0.48 reasonably different from
+zero?
+
+To assess this, we look at the lower and upper 95% Credible Interval
+columns (`l-95% CI` and `u-95% CI` respectively) and see if that
+interval range intersects with zero. We can see that our slope estimate
+(the estimate of `latitude`) ranges from 0.42 to 0.55 - zero is not
+included in this range, so we can reasonably conclude here that the true
+effect of latitude on body size is somewhere between those values, and
+importantly, NOT zero!
+
+------------------------------------------------------------------------
+
+## 1.4 Assess model
+
+Now we need to assess whether or not our model actually ran correctly.
+
+``` r
+summary(m.crab.lat)
+```
+
+     Family: gaussian 
+      Links: mu = identity 
+    Formula: size ~ latitude 
+       Data: pie_crab (Number of observations: 392) 
+      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+             total post-warmup draws = 4000
+
+    Regression Coefficients:
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+    Intercept    -3.61      1.30    -6.09    -1.01 1.00     4116     3192
+    latitude      0.48      0.03     0.42     0.55 1.00     4108     3140
+
+    Further Distributional Parameters:
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+    sigma     2.84      0.10     2.65     3.04 1.00     3758     2852
+
+    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+    and Tail_ESS are effective sample size measures, and Rhat is the potential
+    scale reduction factor on split chains (at convergence, Rhat = 1).
+
+We do this by looking at the `Rhat` (R hat) column, which should be very
+close to 1. If you remember from lecture, this model runs multiple
+chains that converge on estimates for the slope and the intercept. An R
+hat of 1 tells us that those four chains converged on the same estimate.
+This looks fine for us!
+
+# NEED HELP ASSESSING SIGMA
+
+We also need to look at the sigma value. Need help assessing this!!!
+
+``` r
+plot(m.crab.lat) # show posteriors and chains
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-8-1.png)
 
 ``` r
 m.crab.lat$fit
@@ -211,40 +290,6 @@ m.crab.lat$fit
     For each parameter, n_eff is a crude measure of effective sample size,
     and Rhat is the potential scale reduction factor on split chains (at 
     convergence, Rhat=1).
-
-------------------------------------------------------------------------
-
-## 1.4 Interpret model
-
-``` r
-plot(m.crab.lat) # show posteriors and chains
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-8-1.png)
-
-``` r
-summary(m.crab.lat)
-```
-
-     Family: gaussian 
-      Links: mu = identity 
-    Formula: size ~ latitude 
-       Data: pie_crab (Number of observations: 392) 
-      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
-             total post-warmup draws = 4000
-
-    Regression Coefficients:
-              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    Intercept    -3.61      1.30    -6.09    -1.01 1.00     4116     3192
-    latitude      0.48      0.03     0.42     0.55 1.00     4108     3140
-
-    Further Distributional Parameters:
-          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    sigma     2.84      0.10     2.65     3.04 1.00     3758     2852
-
-    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
-    and Tail_ESS are effective sample size measures, and Rhat is the potential
-    scale reduction factor on split chains (at convergence, Rhat = 1).
 
 ------------------------------------------------------------------------
 
