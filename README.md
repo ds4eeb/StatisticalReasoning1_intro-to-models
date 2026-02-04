@@ -1,6 +1,9 @@
 Activity 9: Statistical reasoning 1: intro to models
 ================
 
+Welcome! This is the first statistical reasoning activity. We will learn
+how to implement basic bayesian models using the `brms` package.
+
 ------------------------------------------------------------------------
 
 You will submit one output for this activity:

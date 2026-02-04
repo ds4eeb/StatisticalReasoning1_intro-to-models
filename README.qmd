@@ -7,6 +7,8 @@ execute:
 editor: source
 ---
 
+Welcome! This is the first statistical reasoning activity. We will learn how to implement basic bayesian models using the `brms` package.
+
 ------------------------------------------------------------------------
 
 You will submit one output for this activity:
