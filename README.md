@@ -3,7 +3,7 @@ Activity 9: Statistical reasoning 1: intro to models
 
 ------------------------------------------------------------------------
 
-You will submit two outputs for this activity:
+You will submit one output for this activity:
 
 1.  A **PDF** of a rendered Quarto document with all of your R code.
     Please create a new Quarto document (e.g. don’t use this
@@ -11,10 +11,6 @@ You will submit two outputs for this activity:
     document, in addition to adding your own code and **answers to all
     of the questions** in the “Q#” sections. Submit this through
     Gradescope.
-
-2.  A plot and your answers from the final section. Submit that content
-    to the google slide below:
-    <https://docs.google.com/presentation/d/1AJVu0eq5-OoRGi4UlBervrqKbFHOINvAB-8u0JaFzYM/edit?usp=sharing>
 
 *If you have trouble submitting as a PDF, please ask Calvin or Malin for
 help. If we still can’t solve it, you can submit the .qmd file instead.*
@@ -34,7 +30,7 @@ Let’s start by reading in the relevant packages
 library(brms) # for statistics
 library(tidyverse)
 library(ggeffects) # for the prediction plot
-library(lterdatasampler)
+library(lterdatasampler) # for built-in datasets
 ```
 
 ------------------------------------------------------------------------
@@ -88,8 +84,8 @@ rule:
 > hypothesis, the enemy hypothesis, the resource rule, seasonality
 > hypothesis, and the temperature–size rule (Johnson et al., 2019).”
 
-To start, let’s plot carapace width (`size`) on the y axis with
-`latitude` on the x axis.
+To start, let’s plot our response variable carapace width (`size`) on
+the y axis with our predictor variable `latitude` on the x axis.
 
 ``` r
 pie_crab %>% 
@@ -105,8 +101,8 @@ pie_crab %>%
 
 ### Q1.1 Interpret the graph
 
-Interpret this graph: Does it look like size increases with latitude?
-Describe how confident you are in this interpretation.
+Interpret this graph in 1-2 sentences: Does it look like size increases
+with latitude? Describe how confident you are in this interpretation.
 
 ------------------------------------------------------------------------
 
@@ -132,7 +128,8 @@ $size = intercept + slope*latitude$
 
 ------------------------------------------------------------------------
 
-Time to run the model! There’s a lot here: let’s dig in line-by-line.
+Time to run the model! We will be using the `brm()` function. There’s a
+lot here, so let’s dig in line-by-line:
 
 ``` r
 # latitude model
@@ -163,7 +160,7 @@ argument do?
 ## 1.3 Assess model
 
 First, we need to assess whether or not our model actually ran
-correctly.
+correctly. Let’s print a summary of the model output:
 
 ``` r
 summary(m.crab.lat)
@@ -195,7 +192,7 @@ multiple chains that converge on estimates for the slope and the
 intercept. An R hat of 1 tells us that those four chains converged on
 the same estimate. This looks fine for us!
 
-Let’s also look at the chains and the posterior distributions in a
+Let’s also look at the chains and the “posterior distributions” in a
 graph.
 
 ``` r
@@ -206,9 +203,9 @@ plot(m.crab.lat) # show posteriors and chains
 
 We’re looking for three things:
 
-1.  Are the posterior samples on the left each a smooth distribution, or
-    do they have multiple clear peaks? The latter is a bad sign. They
-    look good in this case.
+1.  Are the posterior samples on the left each a smooth distribution,
+    with one clean peak, or do they have multiple clear peaks? The
+    latter is a bad sign. They look good in this case.
 2.  Are the four chains on the overlapping each other, or are they
     clearly separate? The latter is a bad sign. We again look good in
     this case.
@@ -252,7 +249,7 @@ summary(m.crab.lat)
 
 The output reminds us of our model formula that we chose
 (`size ~ latitude`). Most important to answering our question are the
-parameter `estimates`. Remember, our model was
+parameter estimates in the `estimate` column. Remember, our model was
 $size = intercept + slope*latitude$. The `slope` parameter is going to
 tell us what the effect of latitude is. For every one unit change of
 latitude, what is the effect on size? We need to translate that
@@ -268,10 +265,12 @@ carapace width increases by 0.48 mm.
 
 Earlier you were asked to “*describe how confident you are in this
 interpretation*” when qualitatively interpreting the graph of `size` vs
-`latitude`. Now, let’s examine how much confidence the model has in the
-size-latitude association. Are only positive (non-zero) slopes
-compatible with the data? Or would a flat (slope of zero) association
-also be compatible?
+`latitude`. Now, let’s answer this quantitatively by examining how much
+confidence the model has in the size-latitude association. Are only
+positive (non-zero) slopes compatible with the data? Or would a flat
+(slope of zero) association also be compatible? If a slope of zero is
+compatible with the data, then we can’t really say that our predictor
+(latitude) has any effect on our response (size).
 
 To assess this, we can look at the lower and upper 95% Credible Interval
 columns (`l-95% CI` and `u-95% CI`, respectively) and see if that
@@ -352,23 +351,19 @@ used as a metric of variability: higher sd means higher variability. We
 can ask: *is higher variability in water temperature associated with
 fiddler crab body size?*
 
+------------------------------------------------------------------------
+
 ### Q1.4 Make a hypothesis
 
 *Before* you look at the data, what direction of an effect do you
 expect? Do you think higher variability would be associated with larger
 or smaller crabs? Why? Please write 1-2 sentences.
 
+------------------------------------------------------------------------
+
 ### Q1.5 Graph the data
 
-``` r
-pie_crab %>% 
-  ggplot(aes(x = water_temp_sd, y = size)) +
-  geom_point() +
-  # Make the y-axis include 0
-  ylim(0, NA)
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-12-1.png)
+------------------------------------------------------------------------
 
 ### Q1.6 Interpret the graph
 
@@ -377,58 +372,17 @@ Describe how confident you are in this interpretation.
 
 ------------------------------------------------------------------------
 
+### Q1.7 Set up and run this new model
+
 We’ll set up our model to look like:
 
 $size = intercept + slope*water_temp_sd$
 
 ------------------------------------------------------------------------
 
-### Q1.7 Set up and run this new model
-
 Keep all of the output the same except for the parts where you
 specify 1) the model formula and 2) the `file =` output. Name this new
 model `m.crab.watersd` to distinguish it from the latitude model.
-
-``` r
-# water temp sd
-m.crab.watersd <- 
-  brm(data = pie_crab, 
-      family = gaussian,
-      size ~ water_temp_sd,
-      iter = 2000, warmup = 1000, chains = 4, cores = 4,
-      seed = 4,
-      file = "output/m.crab.watersd")
-```
-
-``` r
-plot(m.crab.watersd) # show posteriors and chains
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-14-1.png)
-
-``` r
-summary(m.crab.watersd)
-```
-
-     Family: gaussian 
-      Links: mu = identity 
-    Formula: size ~ water_temp_sd 
-       Data: pie_crab (Number of observations: 392) 
-      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
-             total post-warmup draws = 4000
-
-    Regression Coefficients:
-                  Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    Intercept        13.95      1.14    11.69    16.19 1.00     4136     2889
-    water_temp_sd     0.10      0.15    -0.20     0.40 1.00     4148     2938
-
-    Further Distributional Parameters:
-          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    sigma     3.51      0.13     3.27     3.77 1.00     4421     2807
-
-    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
-    and Tail_ESS are effective sample size measures, and Rhat is the potential
-    scale reduction factor on split chains (at convergence, Rhat = 1).
 
 ------------------------------------------------------------------------
 
@@ -442,69 +396,38 @@ correctly in 1-2 sentences.
 ``` r
 # show posteriors and chains
 plot(m.crab.watersd) 
-```
 
-![](README_files/figure-commonmark/unnamed-chunk-15-1.png)
-
-``` r
 # show summary, including rhat
 summary(m.crab.watersd)
 ```
 
-     Family: gaussian 
-      Links: mu = identity 
-    Formula: size ~ water_temp_sd 
-       Data: pie_crab (Number of observations: 392) 
-      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
-             total post-warmup draws = 4000
-
-    Regression Coefficients:
-                  Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    Intercept        13.95      1.14    11.69    16.19 1.00     4136     2889
-    water_temp_sd     0.10      0.15    -0.20     0.40 1.00     4148     2938
-
-    Further Distributional Parameters:
-          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    sigma     3.51      0.13     3.27     3.77 1.00     4421     2807
-
-    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
-    and Tail_ESS are effective sample size measures, and Rhat is the potential
-    scale reduction factor on split chains (at convergence, Rhat = 1).
-
 ------------------------------------------------------------------------
 
-## Interpret the model
+### Q1.9 Interpret the model
 
-Based on the summary, do
+Based on the summary output, interpret your model by answering:
+
+1.  What is the effect of your predictor? This information is in the
+    `estimate` column to the right of your predictor `water_temp_sd`.
+    Remember to describe the effect using the units to make it
+    biologically meaningful.
+2.  Is the effect reasonably different from zero? In other words, does
+    the confidence interval intersect with zero?
 
 ``` r
 # Show model output
 summary(m.crab.watersd)
 ```
 
-     Family: gaussian 
-      Links: mu = identity 
-    Formula: size ~ water_temp_sd 
-       Data: pie_crab (Number of observations: 392) 
-      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
-             total post-warmup draws = 4000
-
-    Regression Coefficients:
-                  Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    Intercept        13.95      1.14    11.69    16.19 1.00     4136     2889
-    water_temp_sd     0.10      0.15    -0.20     0.40 1.00     4148     2938
-
-    Further Distributional Parameters:
-          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    sigma     3.51      0.13     3.27     3.77 1.00     4421     2807
-
-    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
-    and Tail_ESS are effective sample size measures, and Rhat is the potential
-    scale reduction factor on split chains (at convergence, Rhat = 1).
-
 ------------------------------------------------------------------------
 
-## 1.7 Bonus: Polynomial regression
+This is a situation where our predictor variable, `water_temp_sd`, does
+not seem to have an effect on the body size of crabs. We would say
+something along the lines of: *We found an increase of 0.10mm of
+carapace width per 1 unit of the standard deviation of water
+temperature, but our 95% credible intervals included zero (-0.20 to
+0.40), suggesting that given our model, the effect of water temperature
+standard deviation on carapace width is not different from zero.*
 
 ------------------------------------------------------------------------
 
@@ -534,9 +457,9 @@ head(nwt_pikas)
     6 2018-06-13 West Kno… West K…      449323      4434273 <NA>               7799.
     # ℹ 1 more variable: elev_m <dbl>
 
-Date is one of the columns, but we specifically want day of year as a
-metric of how late in the season it is. This also allows us to interpret
-our model’s output a little more informatively.
+Date is one of the columns, but we specifically want “day of year” as a
+metric to quantify how late in the season it is. This also allows us to
+interpret our model’s output a little more informatively.
 
 We can extract day of year using the `lubridate` package (within
 `tidyverse`), which is all about working with dates and times:
@@ -563,10 +486,11 @@ head(nwt_pikas_doy)
     6 2018-06-13         164 West Knoll West Knoll 5      449323      4434273 <NA> 
     # ℹ 2 more variables: concentration_pg_g <dbl>, elev_m <dbl>
 
-Now it’s time to choose! In this section, choose between explaining the
-stress variable as a function of either day of year or elevation. If you
-have extra time at the end and would like more practice, you may
-optionally repeat the analysis on the other variable as well.
+Now it’s time to choose! In this section, **choose between explaining
+the stress variable as a function of either `day of year` or
+`elevation`**. If you have extra time at the end and would like more
+practice, you may optionally repeat the analysis on the other variable
+as well.
 
 ------------------------------------------------------------------------
 
@@ -617,11 +541,38 @@ Interpret your model by answering:
 
 ------------------------------------------------------------------------
 
-### Q2.7 Write a small results paragraph
+### Q2.7 Plot the model on the data
+
+Plot either a compatibility interval or prediction interval on the data;
+specify which you are using.
+
+------------------------------------------------------------------------
+
+### Q2.8 Write a small results paragraph
 
 Including the information from Q2.6, write 2-3 sentences as if you were
 writing the results section of a scientific paper. Include a conclusion
 sentence that summarizes your finding.
+
+------------------------------------------------------------------------
+
+### Bonus: Repeat with the other variable for practice
+
+If you have extra time and would like more practice, you may optionally
+repeat these analyses with the other predictor variable.
+
+------------------------------------------------------------------------
+
+Throughout this activity, both datasets had multiple possible predictor
+variables that we chose between to model our response variable of
+interest: crab body size had latitude, temperature, and the variability
+of temperature. Pika stress had elevation and day of year. You may be
+wondering: why do we have to choose only one variable? Is it possible
+that both variables are important in their own way?
+
+This is a great question, and is the foundation for what we will do next
+week, which is *multiple regression*: a way of setting up models while
+incorporating the influence of multiple predictors *at the same time*!
 
 ------------------------------------------------------------------------
 
@@ -636,111 +587,3 @@ When you have finished, practice the GitHub push/pull:
 - Push your changes to the remote branch
 
 And submit the well-labeled PDF on Gradescope. Thanks!
-
-``` r
-lterdatasampler::nwt_pikas
-```
-
-    # A tibble: 109 × 8
-       date       site     station utm_easting utm_northing sex   concentration_pg_g
-       <date>     <fct>    <fct>         <dbl>        <dbl> <fct>              <dbl>
-     1 2018-06-08 Cable G… Cable …      451373      4432963 male              11563.
-     2 2018-06-08 Cable G… Cable …      451411      4432985 male              10629.
-     3 2018-06-08 Cable G… Cable …      451462      4432991 male              10924.
-     4 2018-06-13 West Kn… West K…      449317      4434093 male              10414.
-     5 2018-06-13 West Kn… West K…      449342      4434141 male              13531.
-     6 2018-06-13 West Kn… West K…      449323      4434273 <NA>               7799.
-     7 2018-06-13 West Kn… West K…      449243      4434156 male               4715.
-     8 2018-06-13 West Kn… West K…      449223      4434233 <NA>               2087.
-     9 2018-06-13 West Kn… West K…      449244      4434292 male              12899.
-    10 2018-06-13 West Kn… West K…      449438      4434201 male              11329.
-    # ℹ 99 more rows
-    # ℹ 1 more variable: elev_m <dbl>
-
-``` r
-nwt_pikas %>% 
-  ggplot(aes(x = date, y = concentration_pg_g)) +
-  geom_point()
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-19-1.png)
-
-Elevation model
-
-``` r
-m.p.elev <- brm(
-  data = nwt_pikas, 
-  family = gaussian, 
-  concentration_pg_g ~ elev_m, 
-  iter = 2000, warmup = 1000, chains = 4, cores = 4, 
-  seed = 4, 
-  file = "output/m.p.elev")
-
-plot(m.p.elev) # show posteriors and chains 
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-20-1.png)
-
-``` r
-summary(m.p.elev) 
-```
-
-     Family: gaussian 
-      Links: mu = identity 
-    Formula: concentration_pg_g ~ elev_m 
-       Data: nwt_pikas (Number of observations: 109) 
-      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
-             total post-warmup draws = 4000
-
-    Regression Coefficients:
-              Estimate Est.Error  l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    Intercept  6003.46   9123.36 -11248.51 23760.08 1.00     3779     2818
-    elev_m       -0.24      2.59     -5.29     4.65 1.00     3779     2662
-
-    Further Distributional Parameters:
-          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    sigma  3012.69    208.81  2637.17  3455.33 1.00     4068     2918
-
-    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
-    and Tail_ESS are effective sample size measures, and Rhat is the potential
-    scale reduction factor on split chains (at convergence, Rhat = 1).
-
-Date model
-
-``` r
-m.p.date <- brm(
-  data = nwt_pikas, 
-  family = gaussian, 
-  concentration_pg_g ~ date, 
-  iter = 2000, warmup = 1000, chains = 4, cores = 4, 
-  seed = 4, 
-  file = "output/m.p.date")
-
-plot(m.p.date) # show posteriors and chains 
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-21-1.png)
-
-``` r
-summary(m.p.date) 
-```
-
-     Family: gaussian 
-      Links: mu = identity 
-    Formula: concentration_pg_g ~ date 
-       Data: nwt_pikas (Number of observations: 109) 
-      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
-             total post-warmup draws = 4000
-
-    Regression Coefficients:
-                Estimate Est.Error  l-95% CI   u-95% CI Rhat Bulk_ESS Tail_ESS
-    Intercept 1055447.39 171238.10 724770.24 1400058.52 1.00     3896     3011
-    date          -59.20      9.65    -78.62     -40.57 1.00     3896     3011
-
-    Further Distributional Parameters:
-          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    sigma  2587.50    175.54  2271.18  2955.03 1.00     3946     2709
-
-    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
-    and Tail_ESS are effective sample size measures, and Rhat is the potential
-    scale reduction factor on split chains (at convergence, Rhat = 1).
