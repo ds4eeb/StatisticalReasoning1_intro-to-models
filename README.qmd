@@ -135,6 +135,7 @@ summary(m.crab.lat)
 We do this in part by looking at the `Rhat` (R hat) column, which should be very close to 1. If you remember from lecture, this model runs multiple chains that converge on estimates for the slope and the intercept. An R hat of 1 tells us that those four chains converged on the same estimate. This looks fine for us!
 
 Let's also look at the chains and the posterior distributions in a graph.
+
 ```{r}
 plot(m.crab.lat) # show posteriors and chains
 ```
@@ -180,6 +181,10 @@ Ok! The model reports a zero chance of a slope less than or equal to zero. Feel 
 
 ## 1.5 Plot model on the data
 
+Here we are going to plot the data and the model output in two different ways:
+-   **Compatibility interval** shows uncertainty in the average response (the estimate for the slope)
+-   **Prediction interval** shows uncertainty in the data around the average response (the estimate for the slope)
+
 ```{r}
 # compatibility interval. the shows uncertainty in the average response.
 confm.crab.lat <- predict_response(m.crab.lat)
@@ -199,6 +204,7 @@ plot(confm.crab.lat, show_data = TRUE)
 Let's repeat this example with a new variable: the water temperature standard deviation, `water_temp_sd`. The standard deviation (sd) can be used as a metric of variability: higher sd means higher variability. We can ask: *is higher variability in water temperature associated with fiddler crab body size?*
 
 ### Q1.X Make a hypothesis
+
 *Before* you look at the data, what direction of an effect do you expect? Do you think higher variability would be associated with larger or smaller crabs? Why? Please write 1-2 sentences.
 
 ### Graph the data
@@ -244,7 +250,51 @@ summary(m.crab.watersd)
 
 ----------
 
-# 2.
+# 2. Back to Pikas!
+
+![adultPikaNiwotRidge_SaraMcLaughlin](adultPikaNiwotRidge_SaraMcLaughlin.jpeg)
+
+```{r}
+head(nwt_pikas)
+```
+
+
+## 2.1 Pika stress ~ elevation
+
+### Q2.1 Make a question
+
+Clearly articulate the question that you want to ask
+
+-------
+
+### Q2.2 Make a hypothesis
+
+*Before* you look at the data, what direction of an effect do you expect? Do you think higher elevation would be associated with more or less stressed pikas? Why? Please write 1-2 sentences.
+
+-------
+
+### Q2.3 Graph the data
+
+-------
+
+### Q2.4 Set up and run a model
+
+-------
+
+
+### Q2.5 Assess the model
+
+-------
+
+Assess whether the model ran correctly by looking at R hat, the chains, and the posterior distributions. Describe your thought process
+
+### Q2.6 Interpret the model
+
+-------
+
+
+
+## 2.2 Pika stress ~ date
 
 ### Q2.10 Export graphs
 
